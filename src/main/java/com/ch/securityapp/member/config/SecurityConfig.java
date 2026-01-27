@@ -3,6 +3,7 @@ package com.ch.securityapp.member.config;
 /* 스프링 시큐리티의 빈설정, 필터 처리 흐름을 제어할 수 있는 가장 중요한 클래스 */
 
 import com.ch.securityapp.member.filter.BeforeParameterFilter;
+import com.ch.securityapp.member.handler.JsonSuccessHandler;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,7 +65,7 @@ public class SecurityConfig {
 
     // 아래의 설정이 실제적으로 개발자가 직접 로그인과 관련된 설정을 담당
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JsonSuccessHandler jsonSuccessHandler) throws Exception {
         httpSecurity.cors(cors -> {});  // 위에 등록한 빈 설정을 사용하여 처리..
         // 사이트 위조 해킹에 대한 방지 방법
         httpSecurity.csrf(csrf -> csrf.disable());  // 사이트 변조 공격 방지 비활성화
@@ -83,6 +84,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/api/auth/login") // 스프링이 지원하는 디폴트 로그인 요청 URL을 사용하지 않고, 개발자가 원하는 것으로 URL 바꿈
                 .usernameParameter("homepageId")    // 스프링에게 로그인 파라미터 중 ID 변수명을 알려주고(기본 로그인 폼을 사용하지 않으니 알려줘야 함)
                 .passwordParameter("password")
+                .successHandler(jsonSuccessHandler)
         );
 
         return httpSecurity.build();
