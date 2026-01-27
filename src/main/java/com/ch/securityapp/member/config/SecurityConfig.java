@@ -47,6 +47,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         // CORS 정책을 담는 설정(허용할 출처/메서드(GET, POST...)/헤더 등) 객체
         CorsConfiguration config = new CorsConfiguration();
+        // java 9이후부터 추가됐다. java.util.List.of() 상수 값, 고정된 리스트 정의 시 사용(완전 불변 (추가/삭제/수정 모두 불가)) Arrays.asList()와 다르다..
         config.setAllowedOrigins(List.of("http://localhost:5173")); // 금지사항!!! * 패턴금지 정확히 적어야 됨
         // Cross Origin 때문에 OPTIONS는 크롬브라우저가 로그인 패스 요청을 날리기 앞서서 preflight(시험 비행)로 허용할지 실험
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
