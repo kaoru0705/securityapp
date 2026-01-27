@@ -20,3 +20,4 @@ logging:
 
     org.springframework.security: trace
     com.ch.securityapp: debug
+    com.ch.securityapp.member.filter: debug
