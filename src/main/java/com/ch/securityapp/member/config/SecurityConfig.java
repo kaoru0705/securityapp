@@ -6,7 +6,12 @@ import com.ch.securityapp.member.filter.BeforeParameterFilter;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -17,6 +22,17 @@ import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        //return new BCryptPasswordEncoder();     // 암호화 시켰을 때...
+        return NoOpPasswordEncoder.getInstance();   // 암호화하지 않았을 때
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
     /*-------------------------------------------------------------------------------
      CORS(Cross Origin Resource Sharing) 를 허용하기 위한 설정
