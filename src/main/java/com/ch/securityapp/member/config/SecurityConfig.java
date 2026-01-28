@@ -4,6 +4,7 @@ package com.ch.securityapp.member.config;
 
 import com.ch.securityapp.member.filter.BeforeParameterFilter;
 import com.ch.securityapp.member.handler.JsonSuccessHandler;
+import com.ch.securityapp.member.service.CustomOAuth2UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,7 +88,7 @@ public class SecurityConfig {
 
     // 아래의 설정이 실제적으로 개발자가 직접 로그인과 관련된 설정을 담당
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JsonSuccessHandler jsonSuccessHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JsonSuccessHandler jsonSuccessHandler, CustomOAuth2UserService customOAuth2UserService) throws Exception {
         httpSecurity.cors(cors -> {});  // 위에 등록한 빈 설정을 사용하여 처리..
         // 사이트 위조 해킹에 대한 방지 방법
         httpSecurity.csrf(csrf -> csrf.disable());  // 사이트 변조 공격 방지 비활성화
@@ -100,7 +101,7 @@ public class SecurityConfig {
          -------------------------------------------------------------------------------*/
         httpSecurity.oauth2Login(oauth2 -> oauth2
                 .successHandler(oauth2SuccessHandler())
-        );
+                .userInfoEndpoint(user -> user.userService(customOAuth2UserService))        );
 
 
         httpSecurity.authorizeHttpRequests(auth -> auth
