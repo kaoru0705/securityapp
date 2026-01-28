@@ -37,6 +37,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // spring boot version은 빼자 3.5.10
+    // Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 }
 
 tasks.named('test') {

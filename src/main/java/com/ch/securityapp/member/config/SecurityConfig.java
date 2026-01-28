@@ -4,7 +4,9 @@ package com.ch.securityapp.member.config;
 
 import com.ch.securityapp.member.filter.BeforeParameterFilter;
 import com.ch.securityapp.member.handler.JsonSuccessHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Before;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -21,8 +24,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+@Slf4j
 @Configuration
 public class SecurityConfig {
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -64,6 +72,19 @@ public class SecurityConfig {
         return source;
     }
 
+    /*-------------------------------------------------------------------------------
+    SNS 로그인 성공 이후 클라이언트 보게 될 페이지 처리
+     -------------------------------------------------------------------------------*/
+    @Bean
+    public AuthenticationSuccessHandler oauth2SuccessHandler() {
+
+        return (request, response, authentication) -> {
+            log.debug("클라이언트에게 리다이렉트할 주소는 {}", frontendUrl);
+
+            response.sendRedirect(frontendUrl + "/oauth2/redirect");
+        };
+    }
+
     // 아래의 설정이 실제적으로 개발자가 직접 로그인과 관련된 설정을 담당
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JsonSuccessHandler jsonSuccessHandler) throws Exception {
@@ -74,8 +95,18 @@ public class SecurityConfig {
         // 테스트 목적   filter 전에 BeforeParameterFilter 실행하기
         httpSecurity.addFilterBefore(new BeforeParameterFilter(), UsernamePasswordAuthenticationFilter.class);
 
+        /*-------------------------------------------------------------------------------
+        OAuth2 로그인 필터 등록
+         -------------------------------------------------------------------------------*/
+        httpSecurity.oauth2Login(oauth2 -> oauth2
+                .successHandler(oauth2SuccessHandler())
+        );
+
+
         httpSecurity.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()    // 접근 허용할 패턴 로그인페이지에서 인증 페이지로 가게 할 필요는 없으니
+                .requestMatchers("/api/auth/**").permitAll()    // 접근 허용할 패턴. 로그인페이지에서 다시 로그인 폼으로 가게 할 필요는 없으니
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()    // Oauth2 관련 요청
+                .requestMatchers("/error").permitAll()  // 이 패턴을 풀어놓지 않으면, 에러 페이지마저도 로그인폼으로 보내버림
                 .anyRequest().authenticated()   // 나머지 요청들에 대해선 인증 처리
         );
 
