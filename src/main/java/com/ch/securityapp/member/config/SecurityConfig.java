@@ -100,12 +100,13 @@ public class SecurityConfig {
         OAuth2 로그인 필터 등록
          -------------------------------------------------------------------------------*/
         httpSecurity.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(user -> user.userService(customOAuth2UserService))
                 .successHandler(oauth2SuccessHandler())
-                .userInfoEndpoint(user -> user.userService(customOAuth2UserService))        );
+        );
 
 
         httpSecurity.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()    // 접근 허용할 패턴. 로그인페이지에서 다시 로그인 폼으로 가게 할 필요는 없으니
+                .requestMatchers("/api/auth/login").permitAll()    // 접근 허용할 패턴. 로그인페이지에서 다시 로그인 폼으로 가게 할 필요는 없으니
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()    // Oauth2 관련 요청
                 .requestMatchers("/error").permitAll()  // 이 패턴을 풀어놓지 않으면, 에러 페이지마저도 로그인폼으로 보내버림
                 .anyRequest().authenticated()   // 나머지 요청들에 대해선 인증 처리
