@@ -82,6 +82,20 @@ public class SecurityConfig {
         return (request, response, authentication) -> {
             log.debug("클라이언트에게 리다이렉트할 주소는 {}", frontendUrl);
 
+            // 프론트 단에서 동기로 요청했기 때문에 service로부터 얻은 response를 동기로 처리했다.(response.sendRedirect)
+            // 그걸 프론트단에         <Route path="/oauth2/redirect" element={<OAuth2Redirect />} /> 가 감지한다.
+            // OAuth2Redirect.jsx는 이걸 바로 호출한다.
+            // 이게 가능한 이유는
+            // 소셜 로그인 성공 직후, 스프링 시큐리티는 서버 메모리에 세션을 만들고 브라우저에게 JSESSONID라는 이름의 쿠키를 구워줘서 그렇다.(이 과정은 sendRedirect 할 때 함께 일어난다.)
+            //     useEffect(() => {
+            //        // sns로그인에 성공된 직후이므로, 서버측에서는 세션이 아직 존재할 것이므로, 곧바로 사용자 정보를 요청하자
+            //        fetch("http://localhost:9993/api/me", {
+            //            method: "GET",
+            //            credentials: "include"  // SESSIONID 쿠키 포함시킴
+            //        })
+            // credentials: "include" 설정 덕분에, 브라우저는 방금 서버로부터 받은 JSESSIONID 쿠키를 요청 헤더에 자동으로 실어서 보낸다.
+            // /api/me 에 도착하면 MemberController.getMyInfo에서 스프링 시큐리티는 요청에 실려온 JSESSONID를 보고 알아차린다.
+            // 서버는 로그인 정보를 Authenticaiton 객체에 담아 넣어준다
             response.sendRedirect(frontendUrl + "/oauth2/redirect");
         };
     }
